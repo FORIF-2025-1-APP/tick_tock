@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import './CustomButton.dart';
 
 void main() {
   runApp(const MyApp());
@@ -108,6 +109,11 @@ class _MyHomePageState extends State<MyHomePage> {
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            CustomButton(
+              onPressed: () {},
+              type: ButtonType.primary,
+              child: Text('Click me'),
             ),
           ],
         ),
