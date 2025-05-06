@@ -15,7 +15,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: MaterialTheme.lightScheme().toColorScheme(),
+        colorScheme:
+            MediaQuery.platformBrightnessOf(context) == Brightness.dark
+                ? MaterialTheme.darkScheme().toColorScheme()
+                : MaterialTheme.lightScheme().toColorScheme(),
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
