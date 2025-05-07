@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import './ui/core/themes/theme.dart';
 import './ui/Login/LoginPage.dart';
+import './ui/NavigationBar/CustomNavigationBar.dart';
+import './ui/core/ui/CustomButton.dart';
+import './ui/core/ui/CustomInput.dart';
+import './ui/core/ui/CustomChips.dart';
+import './ui/core/ui/CustomCheckBox.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +21,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme:
-            MediaQuery.platformBrightnessOf(context) == Brightness.dark
+            MediaQuery.platformBrightnessOf(context) == Brightness.light
                 ? MaterialTheme.darkScheme().toColorScheme()
                 : MaterialTheme.lightScheme().toColorScheme(),
       ),
@@ -45,6 +50,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  bool isCheckedLabel = false;
+  bool isCheckedNoLabel = false;
+  bool isChipSelected1 = false;
+  bool isChipSelected2 = false;
+  bool showChip1 = true;
+  bool showChip2 = true;
 
   void _incrementCounter() {
     setState(() {
@@ -107,6 +118,75 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
               child: const Text('Login'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CustomNavigationBar(),
+                  ),
+                );
+              },
+              child: const Text('NavigationBar'),
+            ),
+            CustomButton(
+              onPressed: () {},
+              type: ButtonType.black,
+              child: Text('BlackButton1'),
+            ),
+            CustomButton(
+              onPressed: () {},
+              type: ButtonType.white,
+              child: Text('WhiteButton2'),
+            ),
+            CustomInput(
+              controller: TextEditingController(),
+              hintText: 'Enter text here',
+              labelText: 'Username',
+            ),
+            // 1. 삭제 버튼이 없는 CustomChips
+            if (showChip1)
+              CustomChips(
+                label: 'Label',
+                selected: isChipSelected1,
+                type: ChipType.normal,
+                onTap: () {
+                  setState(() {
+                    isChipSelected1 = !isChipSelected1;
+                  });
+                },
+              ),
+            // X 있는 칩
+            if (showChip2)
+              CustomChips(
+                label: 'Tag1',
+                selected: isChipSelected2,
+                type: ChipType.deletable,
+                onTap: () {
+                  setState(() {
+                    isChipSelected2 = !isChipSelected2;
+                  });
+                },
+                onDelete: () {
+                  setState(() {
+                    showChip2 = false;
+                  });
+                },
+              ),
+            // 1. label 있는 체크박스
+            CustomCheckBox(
+              value: isCheckedLabel,
+              onChanged: (val) => setState(() => isCheckedLabel = val!),
+              label: '자동로그인',
+              type: CheckBoxType.label,
+            ),
+
+            // 2. label 없는 체크박스
+            CustomCheckBox(
+              value: isCheckedNoLabel,
+              onChanged: (val) => setState(() => isCheckedNoLabel = val!),
+              type: CheckBoxType.noLabel,
             ),
           ],
         ),
