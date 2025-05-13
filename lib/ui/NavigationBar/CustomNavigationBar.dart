@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../Calendar/Calendar.dart';
 import '../Todo/Todo.dart';
-import '../Profile/Profile.dart';
+import '../Profile/ProfilePage.dart';
 
 class CustomNavigationBar extends StatefulWidget {
   const CustomNavigationBar({super.key});
@@ -42,7 +42,7 @@ class _MyHomePageState extends State<CustomNavigationBar> {
           children: [
             _buildNavigator(0, const Calendar()),
             _buildNavigator(1, const Todo()),
-            _buildNavigator(2, const Profile()),
+            _buildNavigator(2, const ProfilePage()),
           ],
         ),
         bottomNavigationBar: _buildBottomNav(),
