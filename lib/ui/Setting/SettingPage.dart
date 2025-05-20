@@ -12,7 +12,9 @@ class SettingPage extends StatelessWidget {
         title: const Text('설정'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {},   // 뒤로가기 동작 없음 (디자인용)
+          onPressed: () {
+             Navigator.of(context).pop();
+          },   
         ),
       ),
       body: Padding(

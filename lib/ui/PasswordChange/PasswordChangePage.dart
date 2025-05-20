@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tick_tock/ui/core/themes/theme.dart';
 import 'package:tick_tock/ui/core/ui/CustomInput.dart';
 import 'package:tick_tock/ui/core/ui/CustomButton.dart';
+import 'package:tick_tock/ui/ChangeName/ChangeNameConfirm.dart';
 
 class PasswordChangePage extends StatelessWidget {
   const PasswordChangePage({super.key});
@@ -65,12 +66,15 @@ class PasswordChangePage extends StatelessWidget {
 
             // 흰색 탈퇴 버튼 (화면 아래쪽)
             CustomButton(
-              type: ButtonType.white,
-              onPressed: () {
-                
-              },
-              child: const Text('탈퇴'),
-            ),
+  type: ButtonType.white,
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ChangeNameConfirmPage()),
+    );
+  },
+  child: const Text('탈퇴'),
+),
 
             const SizedBox(height: 20),
           ],
