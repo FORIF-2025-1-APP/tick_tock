@@ -3,6 +3,8 @@ import '../core/ui/CustomButton.dart';
 import '../core/ui/CustomInput.dart';
 import '../core/ui/CustomCheckBox.dart';
 import '../RegisterAllow/RegisterAllow.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -12,12 +14,156 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
-  bool isChecked1 = false;
-  bool isChecked2 = false;
+  bool isChecked = false;
+  bool isEmailValid = false;
+  bool isLoading = false;
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController passwordConfirmController =
+      TextEditingController();
+
+  final String serverUrl = 'https://example.com/api/auth';
+
+  Future<void> checkEmailDuplicate() async {
+    if (emailController.text.isEmpty) {
+      showErrorDialog('입력 오류', '이메일을 입력해주세요.');
+      return;
+    }
+    if (!RegExp(
+      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+    ).hasMatch(emailController.text)) {
+      showErrorDialog('입력 오류', '유효한 이메일 형식이 아닙니다.');
+      return;
+    }
+    setState(() => isLoading = true);
+    try {
+      final response = await http.post(
+        Uri.parse('$serverUrl/checkemail'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': emailController.text}),
+      );
+      setState(() => isLoading = false);
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['message'] == '사용 가능한 이메일입니다.') {
+        setState(() => isEmailValid = true);
+        showDialog(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: Text('확인 완료'),
+                content: Text('사용 가능한 이메일입니다.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('확인'),
+                  ),
+                ],
+              ),
+        );
+      } else {
+        setState(() => isEmailValid = false);
+        showErrorDialog('중복 확인', data['message'] ?? '이미 사용 중인 이메일입니다.');
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+      showErrorDialog('네트워크 에러', '인터넷 연결을 확인해주세요.');
+    }
+  }
+
+  Future<void> register() async {
+    if (emailController.text.isEmpty ||
+        usernameController.text.isEmpty ||
+        passwordController.text.isEmpty ||
+        passwordConfirmController.text.isEmpty) {
+      showErrorDialog('입력 오류', '모든 필드를 입력해주세요.');
+      return;
+    }
+    if (!isEmailValid) {
+      showErrorDialog('입력 오류', '이메일 중복 확인을 해주세요.');
+      return;
+    }
+    if (passwordController.text != passwordConfirmController.text) {
+      showErrorDialog('입력 오류', '비밀번호가 일치하지 않습니다.');
+      return;
+    }
+    if (!isChecked) {
+      showErrorDialog('약관 동의', '약관에 동의해주세요.');
+      return;
+    }
+
+    setState(() => isLoading = true);
+    try {
+      final response = await http.post(
+        Uri.parse('$serverUrl/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': emailController.text,
+          'username': usernameController.text,
+          'password': passwordController.text,
+        }),
+      );
+      setState(() => isLoading = false);
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 &&
+          data['message'] == 'User created successfully') {
+        showDialog(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: Text('회원가입 성공'),
+                content: Text('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    },
+                    child: Text('확인'),
+                  ),
+                ],
+              ),
+        );
+      } else {
+        showErrorDialog('회원가입 실패', data['message'] ?? '회원가입에 실패했습니다.');
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+      showErrorDialog('네트워크 에러', '인터넷 연결을 확인해주세요.');
+    }
+  }
+
+  void showErrorDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder:
+          (BuildContext context) => AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              TextButton(
+                child: Text('확인'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+    );
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    usernameController.dispose();
+    passwordController.dispose();
+    passwordConfirmController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // 실제로는 TextEditingController, 중복확인 로직, 상태관리 등 추가 필요
     return Scaffold(
       appBar: AppBar(leading: BackButton(), title: Text('회원가입')),
       body: Center(
@@ -25,60 +171,60 @@ class _RegisterState extends State<Register> {
           padding: const EdgeInsets.all(24.0),
           child: Column(
             children: [
-              CustomInput(labelText: 'Email'),
+              CustomInput(
+                labelText: 'Email',
+                controller: emailController,
+                onChanged: (_) {
+                  if (isEmailValid) {
+                    setState(() => isEmailValid = false);
+                  }
+                },
+              ),
               SizedBox(height: 16),
               CustomButton(
                 type: ButtonType.white,
                 child: Text('중복 확인'),
-                onPressed: () {},
+                onPressed: checkEmailDuplicate,
               ),
               SizedBox(height: 16),
-              CustomInput(labelText: 'Username'),
+              CustomInput(
+                labelText: 'Username',
+                controller: usernameController,
+              ),
               SizedBox(height: 16),
-              CustomInput(labelText: 'Password', obscureText: true),
+              CustomInput(
+                labelText: 'Password',
+                obscureText: true,
+                controller: passwordController,
+              ),
               SizedBox(height: 16),
-              CustomInput(labelText: 'Password Confirm', obscureText: true),
+              CustomInput(
+                labelText: 'Password Confirm',
+                obscureText: true,
+                controller: passwordConfirmController,
+              ),
               SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CustomCheckBox(
-                    value: isChecked1,
+                    value: isChecked,
                     type: CheckBoxType.label,
-                    onChanged: (val) => setState(() => isChecked1 = val!),
+                    onChanged: (val) => setState(() => isChecked = val!),
                     label: 'Terms and Service 1',
                   ),
                   IconButton(
-                    icon: Icon(Icons.arrow_forward), // → 아이콘
-                    onPressed: () {
-                      Navigator.push(
+                    icon: Icon(Icons.arrow_forward),
+                    onPressed: () async {
+                      final result = await Navigator.push<bool>(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => RegisterAllow(),
+                          builder: (context) => const RegisterAllow(),
                         ),
                       );
-                    },
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CustomCheckBox(
-                    value: isChecked2,
-                    type: CheckBoxType.label,
-                    onChanged: (val) => setState(() => isChecked2 = val!),
-                    label: 'Terms and Service 2',
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.arrow_forward), // → 아이콘
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RegisterAllow(),
-                        ),
-                      );
+                      if (result == true) {
+                        setState(() => isChecked = true);
+                      }
                     },
                   ),
                 ],
@@ -86,8 +232,11 @@ class _RegisterState extends State<Register> {
               Spacer(),
               CustomButton(
                 type: ButtonType.black,
-                child: Text('회원가입'),
-                onPressed: () {},
+                child:
+                    isLoading
+                        ? CircularProgressIndicator(color: Colors.white)
+                        : Text('회원가입'),
+                onPressed: isLoading ? null : register,
               ),
             ],
           ),
