@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../core/ui/CustomButton.dart';
 
 // 주차 표시(EX - 2025/05/01 ~ 2025/05/07) -> 터치해서 주차 옮길 수 있음
-// 일~토 순으로 나열, 주차 이동 버튼
+// 일~토 순으로 나열, 주차 이동버튼
+// 특정 날짜에 대한 투두 나와야함
+
 class WeekNavigator extends StatefulWidget {
   const WeekNavigator({Key? key}) : super(key: key);
 
