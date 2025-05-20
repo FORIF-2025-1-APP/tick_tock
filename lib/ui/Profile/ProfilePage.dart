@@ -181,24 +181,3 @@ GestureDetector(
 }
 
 
-void main() {
-  runApp(const ProfileApp());
-}
-
-class ProfileApp extends StatelessWidget {
-  const ProfileApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Profile Preview',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: MediaQuery.platformBrightnessOf(context) == Brightness.light
-            ? MaterialTheme.darkScheme().toColorScheme()
-            : MaterialTheme.lightScheme().toColorScheme(),
-      ),
-      home: const ProfilePage(),
-    );
-  }
-}

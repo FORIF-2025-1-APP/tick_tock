@@ -93,24 +93,3 @@ class ChangeNameConfirmPage extends StatelessWidget {
   }
 }
 
-void main() {
-  runApp(const SettingApp());
-}
-
-class SettingApp extends StatelessWidget {
-  const SettingApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Setting Preview',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: MediaQuery.platformBrightnessOf(context) == Brightness.light
-            ? MaterialTheme.darkScheme().toColorScheme()
-            : MaterialTheme.lightScheme().toColorScheme(),
-      ),
-      home: const ChangeNameConfirmPage(),
-    );
-  }
-}
