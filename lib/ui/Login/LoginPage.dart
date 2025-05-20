@@ -183,10 +183,24 @@ class _LoginPageState extends State<LoginPage> {
               controller: passwordController,
             ),
             SizedBox(height: 16),
+
+            //CustomButton(
+            // type: ButtonType.black,
+            //  child: Text('로그인'),
+            //  onPressed: login,
+            //),
             CustomButton(
               type: ButtonType.black,
               child: Text('로그인'),
-              onPressed: login,
+              onPressed: () {
+                // 비밀번호 찾기 화면으로 이동
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CustomNavigationBar(),
+                  ),
+                );
+              },
             ),
             SizedBox(height: 16),
             CustomButton(
