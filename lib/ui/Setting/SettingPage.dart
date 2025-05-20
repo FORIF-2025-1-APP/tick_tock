@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tick_tock/ui/core/themes/theme.dart';
-
+import 'package:tick_tock/ui//ChangeName/ChangeNamePage.dart';
+import 'package:tick_tock/ui/PasswordChange/PasswordChangePage.dart';
 
 class SettingPage extends StatelessWidget {
   const SettingPage({super.key});
@@ -21,15 +22,31 @@ class SettingPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 10),
-            const Text(
-              '닉네임 변경',
-              style: TextStyle(fontSize: 14),
+          GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ChangeNamePage()),
+                );
+              },
+              child: const Text(
+                '닉네임 변경',
+                style: TextStyle(fontSize: 14),
+              ),
             ),
             const SizedBox(height: 30),
-            const Text(
+                      GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PasswordChangePage()),
+              );
+            },
+            child: const Text(
               '비밀번호 변경',
               style: TextStyle(fontSize: 14),
             ),
+          ),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

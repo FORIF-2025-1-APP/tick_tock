@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tick_tock/ui/core/themes/theme.dart';
 import 'package:tick_tock/ui/core/ui/CustomInput.dart';
-
+import 'package:tick_tock/ui/Setting/SettingPage.dart';
+import 'package:tick_tock/ui/ManageCategory/ManageCategoryPage.dart';
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
@@ -18,19 +19,36 @@ class ProfilePage extends StatelessWidget {
         title: const Text('Profile'),
         actions: [
           // 카테고리 버튼
-          Container(
-            margin: const EdgeInsets.only(right: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: colors.surfaceVariant,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Row(
-              children: [Icon(Icons.edit, size: 16), SizedBox(width: 4), Text('카테고리')],
-            ),
-          ),
-          IconButton(
-            onPressed: () {},
+      GestureDetector(
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ManageCategoryPage()),
+    );
+  },
+  child: Container(
+    margin: const EdgeInsets.only(right: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+    decoration: BoxDecoration(
+      color: colors.surfaceVariant,
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: const Row(
+      children: [
+        Icon(Icons.edit, size: 16),
+        SizedBox(width: 4),
+        Text('카테고리'),
+      ],
+    ),
+  ),
+),
+         IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingPage()),
+              );
+            },
             icon: const Icon(Icons.settings),
           ),
         ],
