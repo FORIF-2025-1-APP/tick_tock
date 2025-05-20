@@ -8,6 +8,7 @@ class CustomInput extends StatelessWidget {
   final double? width;
   final double? height;
   final EdgeInsetsGeometry? padding;
+  final Function(String)? onChanged;
 
   const CustomInput({
     Key? key,
@@ -18,6 +19,7 @@ class CustomInput extends StatelessWidget {
     this.width = 320,
     this.height = 55,
     this.padding,
+    this.onChanged,
   }) : super(key: key);
 
   @override
@@ -29,6 +31,7 @@ class CustomInput extends StatelessWidget {
       height: height,
       child: TextFormField(
         controller: controller,
+        onChanged: onChanged,
         obscureText: obscureText,
         decoration: InputDecoration(
           hintText: hintText,

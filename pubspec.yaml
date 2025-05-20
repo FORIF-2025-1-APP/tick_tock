@@ -31,6 +31,15 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # HTTP 통신
+  http: ^1.4.0
+
+  # 로컬 저장소
+  shared_preferences: ^2.5.3
+
+  # 구글 로그인
+  google_sign_in: ^6.3.0
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
