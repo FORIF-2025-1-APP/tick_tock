@@ -24,16 +24,15 @@ class _RegisterState extends State<Register> {
   final TextEditingController passwordConfirmController =
       TextEditingController();
 
-  final String serverUrl = 'https://example.com/api/auth';
+  final String serverUrl = 'https://foriftiktokapi.seongjinemong.app/api/auth';
 
   Future<void> checkEmailDuplicate() async {
-    if (emailController.text.isEmpty) {
+    final email = emailController.text.trim();
+    if (email.isEmpty) {
       showErrorDialog('입력 오류', '이메일을 입력해주세요.');
       return;
     }
-    if (!RegExp(
-      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-    ).hasMatch(emailController.text)) {
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
       showErrorDialog('입력 오류', '유효한 이메일 형식이 아닙니다.');
       return;
     }
@@ -42,7 +41,7 @@ class _RegisterState extends State<Register> {
       final response = await http.post(
         Uri.parse('$serverUrl/checkemail'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': emailController.text}),
+        body: jsonEncode({'email': email}),
       );
       setState(() => isLoading = false);
 
@@ -108,7 +107,7 @@ class _RegisterState extends State<Register> {
       setState(() => isLoading = false);
 
       final data = jsonDecode(response.body);
-      if (response.statusCode == 200 &&
+      if (response.statusCode == 201 &&
           data['message'] == 'User created successfully') {
         showDialog(
           context: context,

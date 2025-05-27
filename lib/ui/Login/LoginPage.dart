@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:convert';
+import 'package:tick_tock/config/auth_session.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,148 +20,145 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool isChecked1 = false;
-  final TextEditingController usernameController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  bool isLoading = false;
 
-  final String serverUrl = 'https://example.com/api/auth';
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool isLoading1 = false;
+  bool isLoading2 = false;
+
+  final String serverUrl = 'https://foriftiktokapi.seongjinemong.app/api/auth';
 
   Future<void> login() async {
-    if (usernameController.text.isEmpty || passwordController.text.isEmpty) {
-      showErrorDialog('입력 오류', '아이디와 비밀번호를 모두 입력해주세요.');
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      showErrorDialog('입력 오류', '이메일과 비밀번호를 모두 입력해주세요.');
       return;
     }
 
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading1 = true);
+
     try {
       final response = await http.post(
         Uri.parse('$serverUrl/login'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': usernameController.text,
-          'password': passwordController.text,
-        }),
+        body: jsonEncode({'email': email, 'password': password}),
       );
-      setState(() {
-        isLoading = false;
-      });
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['token'] != null) {
-          await saveTokenAndUserInfo(data['token'], data['user']);
-          if (isChecked1) {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setBool('autoLogin', true);
-          }
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => CustomNavigationBar()),
-          );
-        } else {
-          showErrorDialog('로그인 실패', data['message'] ?? '로그인에 실패했습니다.');
+      setState(() => isLoading1 = false);
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['token'] != null) {
+        AuthSession.token = data['token'];
+        AuthSession.userId = data['user']['id'];
+        AuthSession.email = data['user']['email'];
+        AuthSession.nickname = data['user']['nickname'];
+
+        if (isChecked1) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', data['token']);
+          await prefs.setBool('autoLogin', true);
+          await prefs.setString('userId', data['user']['id']);
+          await prefs.setString('userEmail', data['user']['email']);
+          await prefs.setString('userNickname', data['user']['nickname']);
         }
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => CustomNavigationBar()),
+        );
+      } else if (response.statusCode == 401) {
+        showErrorDialog('로그인 실패', '이메일 또는 비밀번호가 잘못되었습니다.');
       } else {
-        showErrorDialog('서버 에러', '서버에 문제가 발생했습니다.');
+        showErrorDialog('서버 에러', data['message'] ?? '서버 응답 오류');
       }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading1 = false);
       showErrorDialog('네트워크 에러', '인터넷 연결을 확인해주세요.');
     }
   }
 
   Future<void> signInWithGoogle() async {
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading2 = true);
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['email']);
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email', 'openid', 'profile'],
+      );
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
-        setState(() {
-          isLoading = false;
-        });
+        setState(() => isLoading2 = false);
         return;
       }
+
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-      if (googleAuth.idToken == null) {
-        setState(() {
-          isLoading = false;
-        });
+
+      if (googleAuth.accessToken == null) {
+        setState(() => isLoading2 = false);
         showErrorDialog('로그인 실패', '구글 인증 토큰을 가져오지 못했습니다.');
         return;
       }
+
       final response = await http.post(
         Uri.parse('$serverUrl/google'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'idToken': googleAuth.idToken}),
+        body: jsonEncode({'idToken': googleAuth.accessToken}),
       );
-      setState(() {
-        isLoading = false;
-      });
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['token'] != null) {
-          await saveTokenAndUserInfo(data['token'], data['user']);
-          if (isChecked1) {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setBool('autoLogin', true);
-          }
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => CustomNavigationBar()),
-          );
-        } else {
-          showErrorDialog('로그인 실패', data['message'] ?? '구글 로그인에 실패했습니다.');
+
+      setState(() => isLoading2 = false);
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['token'] != null) {
+        AuthSession.token = data['token'];
+        AuthSession.userId = data['user']['id'];
+        AuthSession.email = data['user']['email'];
+        AuthSession.nickname = data['user']['nickname'];
+
+        if (isChecked1) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', data['token']);
+          await prefs.setBool('autoLogin', true);
+          await prefs.setString('userId', data['user']['id']);
+          await prefs.setString('userEmail', data['user']['email']);
+          await prefs.setString('userNickname', data['user']['nickname']);
         }
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => CustomNavigationBar()),
+        );
       } else {
-        showErrorDialog('서버 에러', '서버에 문제가 발생했습니다.');
+        showErrorDialog('구글 로그인 실패', data['message'] ?? '실패');
       }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      showErrorDialog('로그인 에러', '구글 로그인 중 오류가 발생했습니다: $e');
+      setState(() => isLoading2 = false);
+      showErrorDialog('로그인 에러', '구글 로그인 중 오류 발생: $e');
     }
-  }
-
-  Future<void> saveTokenAndUserInfo(
-    String token,
-    Map<String, dynamic> user,
-  ) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('token', token);
-    await prefs.setString('userId', user['id']);
-    await prefs.setString('userEmail', user['email']);
-    await prefs.setString('userNickname', user['nickname']);
   }
 
   void showErrorDialog(String title, String message) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(message),
-          actions: [
-            TextButton(
-              child: Text('확인'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        );
-      },
+      builder:
+          (_) => AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('확인'),
+              ),
+            ],
+          ),
     );
   }
 
   @override
   void dispose() {
-    usernameController.dispose();
+    emailController.dispose();
     passwordController.dispose();
     super.dispose();
   }
@@ -175,7 +173,7 @@ class _LoginPageState extends State<LoginPage> {
           children: [
             Icon(Icons.person, size: 64),
             SizedBox(height: 32),
-            CustomInput(labelText: 'Username', controller: usernameController),
+            CustomInput(labelText: 'Email', controller: emailController),
             SizedBox(height: 16),
             CustomInput(
               labelText: 'Password',
@@ -183,36 +181,22 @@ class _LoginPageState extends State<LoginPage> {
               controller: passwordController,
             ),
             SizedBox(height: 16),
-
-            //CustomButton(
-            // type: ButtonType.black,
-            //  child: Text('로그인'),
-            //  onPressed: login,
-            //),
             CustomButton(
               type: ButtonType.black,
-              child: Text('로그인'),
-              onPressed: () {
-                // 비밀번호 찾기 화면으로 이동
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CustomNavigationBar(),
-                  ),
-                );
-              },
+              child:
+                  isLoading1
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text('로그인'),
+              onPressed: login,
             ),
             SizedBox(height: 16),
             CustomButton(
               type: ButtonType.white,
-              child: Text('Login with Google'),
+              child:
+                  isLoading2
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text('Login with Google'),
               onPressed: signInWithGoogle,
-            ),
-            SizedBox(height: 16),
-            CustomButton(
-              type: ButtonType.white,
-              child: Text('Login with Kakao'),
-              onPressed: () {},
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -231,7 +215,6 @@ class _LoginPageState extends State<LoginPage> {
                 TextButton(
                   child: Text('회원가입'),
                   onPressed: () {
-                    // 회원가입 화면으로 이동
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => Register()),
@@ -242,7 +225,6 @@ class _LoginPageState extends State<LoginPage> {
                 TextButton(
                   child: Text('비밀번호 찾기'),
                   onPressed: () {
-                    // 비밀번호 찾기 화면으로 이동
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => FindPassword()),
