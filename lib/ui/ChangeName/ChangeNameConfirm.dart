@@ -3,6 +3,25 @@ import 'package:tick_tock/ui/core/themes/theme.dart';
 import 'package:tick_tock/ui/core/ui/CustomInput.dart';
 import 'package:tick_tock/ui/core/ui/CustomButton.dart';
 import 'package:tick_tock/ui/core/ui/CustomChips.dart';
+import 'package:tick_tock/ui/Login/LoginPage.dart';
+import 'package:http/http.dart' as http;
+
+Future<void> deleteUser() async {
+  final url = Uri.parse('https://forifitkokapi.seongjinemong.app/api/user');
+
+  try {
+    final response = await http.delete(url);
+
+    if (response.statusCode == 200) {
+      print('회원 탈퇴 성공');
+    } else {
+      print('탈퇴 실패: ${response.statusCode}');
+      print('응답: ${response.body}');
+    }
+  } catch (e) {
+    print('에러 발생: $e');
+  }
+}
 
 
 class ChangeNameConfirmPage extends StatelessWidget {
@@ -50,7 +69,7 @@ class ChangeNameConfirmPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              //  이미지 경로를 여기에 넣어주세요
+              
               Center(
                 child: Image.asset(
                   'assets/images/cutyseed.png',
@@ -74,15 +93,25 @@ class ChangeNameConfirmPage extends StatelessWidget {
                     child: const Text('취소'),
                   ),
                   const SizedBox(width: 8),
-                  TextButton(
-                    onPressed: () {
-                      
-                    },
-                    child: Text(
-                      '탈퇴',
-                      style: TextStyle(color: colors.error),
-                    ),
-                  ),
+         TextButton(
+  onPressed: () async {
+    await deleteUser();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('탈퇴가 완료되었습니다')),
+    );
+
+   
+   Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+      (route) => false,
+    );
+  },
+  child: Text(
+    '탈퇴',
+    style: TextStyle(color: colors.error),
+  ),
+),
                 ],
               ),
             ],

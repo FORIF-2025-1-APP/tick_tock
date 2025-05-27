@@ -3,8 +3,44 @@ import 'package:tick_tock/ui/core/themes/theme.dart';
 import 'package:tick_tock/ui/core/ui/CustomInput.dart';
 import 'package:tick_tock/ui/Setting/SettingPage.dart';
 import 'package:tick_tock/ui/ManageCategory/ManageCategoryPage.dart';
-class ProfilePage extends StatelessWidget {
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+Future<List<String>> fetchFriends() async {
+  final url = Uri.parse('https://forifitkokapi.seongjinemong.app/api/friend');
+
+  try {
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((item) => item['friendNickname'] as String).toList();
+    } else {
+      print('친구 목록 불러오기 실패: ${response.statusCode}');
+      return [];
+    }
+  } catch (e) {
+    print('예외 발생: $e');
+    return [];
+  }
+}
+
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  List<String> friends = [];
+
+  void _loadAndShowFriends() async {
+    final fetchedFriends = await fetchFriends();
+    setState(() {
+      friends = fetchedFriends;
+    });
+    _openDraggableSheet(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,37 +54,28 @@ class ProfilePage extends StatelessWidget {
         titleSpacing: 16,
         title: const Text('Profile'),
         actions: [
-          // 카테고리 버튼
-      GestureDetector(
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ManageCategoryPage()),
-    );
-  },
-  child: Container(
-    margin: const EdgeInsets.only(right: 8),
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-    decoration: BoxDecoration(
-      color: colors.surfaceVariant,
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: const Row(
-      children: [
-        Icon(Icons.edit, size: 16),
-        SizedBox(width: 4),
-        Text('카테고리'),
-      ],
-    ),
-  ),
-),
-         IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingPage()),
-              );
-            },
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ManageCategoryPage()),
+            ),
+            child: Container(
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: colors.surfaceVariant,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
+                children: [Icon(Icons.edit, size: 16), SizedBox(width: 4), Text('카테고리')],
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingPage()),
+            ),
             icon: const Icon(Icons.settings),
           ),
         ],
@@ -57,9 +84,8 @@ class ProfilePage extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              
               Row(
                 children: [
                   Stack(
@@ -85,59 +111,53 @@ class ProfilePage extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
-                      Text('졸려요 자고싶어요', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text(
+                        'hhihihihihihi',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                       SizedBox(height: 4),
-                      Text('HYU@hanyang.ac.kr', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                      Text(
+                        'HYU@hanyang.ac.kr',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
                     ],
                   ),
                 ],
               ),
-
               const SizedBox(height: 24),
               const Divider(),
               const SizedBox(height: 24),
-
-              
               Center(
                 child: Container(
                   height: 500,
-                  width: 300,
+                  width: 400,
                   decoration: BoxDecoration(
                     color: colors.surfaceVariant,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  // TODO: 이미지.asset(...)
                 ),
               ),
-
               const SizedBox(height: 24),
-
-              
-              const SizedBox(height: 16),
-GestureDetector(
-  onTap: () => _openDraggableSheet(context),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      
-      Container(
-        height: 6,
-        margin: const EdgeInsets.symmetric(horizontal: 120),
-        decoration: BoxDecoration(
-          color: Colors.grey[300],
-          borderRadius: BorderRadius.circular(3),
-        ),
-      ),
-      const SizedBox(height: 8),
-      CustomInput(
-        controller: TextEditingController(),
-        labelText: '이름',
-        hintText: '정현도',
-      ),
-    ],
-  ),
-),
-              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: _loadAndShowFriends,
+                      child: AbsorbPointer(
+                        child: CustomInput(
+                          controller: TextEditingController(),
+                          labelText: '이름',
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: _loadAndShowFriends,
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -164,7 +184,6 @@ GestureDetector(
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // 모달 상단 핸들바
                 Container(
                   height: 4,
                   width: 40,
@@ -173,20 +192,20 @@ GestureDetector(
                     color: Colors.grey[400],
                     borderRadius: BorderRadius.circular(2),
                   ),
-                  alignment: Alignment.center,
                 ),
                 Expanded(
-                  child: ListView(
+                  child: ListView.builder(
                     controller: scrollController,
                     padding: const EdgeInsets.all(16),
-                    children: [
-                      const Text('여기에 모달 콘텐츠를 넣으세요'),
-                      const SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('닫기'),
-                      ),
-                    ],
+                    itemCount: friends.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        leading: CircleAvatar(
+                          child: Text(friends[index][0]),
+                        ),
+                        title: Text(friends[index]),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -197,5 +216,3 @@ GestureDetector(
     );
   }
 }
-
-
