@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import './ui/Login/LoginPage.dart';
 import './ui/NavigationBar/CustomNavigationBar.dart';
+import './ui/Splash/Splash.dart';
 import './ui/core/themes/theme.dart'; // 커스텀 테마가 있다면
 
 void main() {
@@ -18,8 +19,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme:
             MediaQuery.platformBrightnessOf(context) == Brightness.light
-                ? MaterialTheme.darkScheme().toColorScheme()
-                : MaterialTheme.lightScheme().toColorScheme(),
+                ? MaterialTheme.lightScheme().toColorScheme()
+                : MaterialTheme.darkScheme().toColorScheme(),
       ),
       home: const LoginPage(), // 최초 로그인 화면
     );
