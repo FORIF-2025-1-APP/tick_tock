@@ -91,8 +91,6 @@ class _ManageCategoryPageState extends State<ManageCategoryPage> {
 
   Future<void> loadCategories() async {
     final result = await getCategories('test'); //여기에 api 아이디 넣으면 됑됑
-      print("받은 카테고리 목록: $result"); // ← 이거 추가
-
     setState(() {
       categoryList = result;
     });
@@ -179,4 +177,3 @@ Wrap(
     );
   }
 }
-
