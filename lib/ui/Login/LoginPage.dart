@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:convert';
 import 'package:tick_tock/config/auth_session.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -29,6 +30,7 @@ class _LoginPageState extends State<LoginPage> {
   final String serverUrl = 'https://foriftiktokapi.seongjinemong.app/api/auth';
 
   Future<void> login() async {
+    final storage = const FlutterSecureStorage();
     final email = emailController.text.trim();
     final password = passwordController.text;
 
@@ -51,19 +53,21 @@ class _LoginPageState extends State<LoginPage> {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200 && data['token'] != null) {
-        AuthSession.token = data['token'];
-        AuthSession.userId = data['user']['id'];
-        AuthSession.email = data['user']['email'];
-        AuthSession.nickname = data['user']['nickname'];
+        final token = json.decode(response.body)['token'];
+        await storage.write(key: 'auth_token', value: token);
+        // AuthSession.token = data['token'];
+        // AuthSession.userId = data['user']['id'];
+        // AuthSession.email = data['user']['email'];
+        // AuthSession.nickname = data['user']['nickname'];
 
-        if (isChecked1) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('token', data['token']);
-          await prefs.setBool('autoLogin', true);
-          await prefs.setString('userId', data['user']['id']);
-          await prefs.setString('userEmail', data['user']['email']);
-          await prefs.setString('userNickname', data['user']['nickname']);
-        }
+        // if (isChecked1) {
+        //   final prefs = await SharedPreferences.getInstance();
+        //   await prefs.setString('token', data['token']);
+        //   await prefs.setBool('autoLogin', true);
+        //   await prefs.setString('userId', data['user']['id']);
+        //   await prefs.setString('userEmail', data['user']['email']);
+        //   await prefs.setString('userNickname', data['user']['nickname']);
+        // }
 
         Navigator.pushReplacement(
           context,
@@ -81,6 +85,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> signInWithGoogle() async {
+    final storage = const FlutterSecureStorage();
     setState(() => isLoading2 = true);
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn(
@@ -112,19 +117,21 @@ class _LoginPageState extends State<LoginPage> {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200 && data['token'] != null) {
-        AuthSession.token = data['token'];
-        AuthSession.userId = data['user']['id'];
-        AuthSession.email = data['user']['email'];
-        AuthSession.nickname = data['user']['nickname'];
+        final token = json.decode(response.body)['token'];
+        await storage.write(key: 'auth_token', value: token);
+        // AuthSession.token = data['token'];
+        // AuthSession.userId = data['user']['id'];
+        // AuthSession.email = data['user']['email'];
+        // AuthSession.nickname = data['user']['nickname'];
 
-        if (isChecked1) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('token', data['token']);
-          await prefs.setBool('autoLogin', true);
-          await prefs.setString('userId', data['user']['id']);
-          await prefs.setString('userEmail', data['user']['email']);
-          await prefs.setString('userNickname', data['user']['nickname']);
-        }
+        // if (isChecked1) {
+        //   final prefs = await SharedPreferences.getInstance();
+        //   await prefs.setString('token', data['token']);
+        //   await prefs.setBool('autoLogin', true);
+        //   await prefs.setString('userId', data['user']['id']);
+        //   await prefs.setString('userEmail', data['user']['email']);
+        //   await prefs.setString('userNickname', data['user']['nickname']);
+        // }
 
         Navigator.pushReplacement(
           context,

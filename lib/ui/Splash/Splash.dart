@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../Login/LoginPage.dart';
 import '../NavigationBar/CustomNavigationBar.dart';
-import 'package:tick_tock/config/auth_session.dart';
 
 class Splash extends StatefulWidget {
   const Splash({super.key});
@@ -13,6 +11,8 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> {
+  final storage = const FlutterSecureStorage();
+
   @override
   void initState() {
     super.initState();
@@ -20,33 +20,30 @@ class _SplashState extends State<Splash> {
   }
 
   Future<void> checkLoginStatus() async {
-    await Future.delayed(Duration(seconds: 3));
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-    final autoLogin = prefs.getBool('autoLogin') ?? false;
+    await Future.delayed(const Duration(seconds: 3));
+
+    final token = await storage.read(key: 'token');
+    final autoLogin = await storage.read(key: 'autoLogin');
 
     if (!mounted) return;
 
-    if (token != null && autoLogin) {
-      AuthSession.token = token;
-      AuthSession.userId = prefs.getString('userId');
-      AuthSession.email = prefs.getString('userEmail');
-      AuthSession.nickname = prefs.getString('userNickname');
-
+    if (token != null && autoLogin == 'true') {
+      // 로그인 상태 유지 → 홈으로 이동
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => CustomNavigationBar()),
+        MaterialPageRoute(builder: (context) => const CustomNavigationBar()),
       );
     } else {
+      // 로그인 필요 → 로그인 페이지로 이동
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LoginPage()),
+        MaterialPageRoute(builder: (context) => const LoginPage()),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: Icon(Icons.person, size: 64)));
+    return const Scaffold(body: Center(child: Icon(Icons.person, size: 64)));
   }
 }
