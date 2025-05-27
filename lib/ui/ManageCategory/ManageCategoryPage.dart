@@ -21,6 +21,26 @@ class _ManageCategoryPageState extends State<ManageCategoryPage> {
   final Set<String> selectedTags = {};
   final Set<String> selectedLabels = {};
 
+<<<<<<< Updated upstream
+=======
+    List<Map<String, dynamic>> categoryList = [];
+//카테고리 ui반영영
+  @override
+  void initState() {
+    super.initState();
+    loadCategories();
+  }
+
+  Future<void> loadCategories() async {
+    final result = await getCategories('test'); //여기에 api 아이디 넣으면 됑됑
+      print("받은 카테고리 목록: $result"); 
+
+    setState(() {
+      categoryList = result;
+    });
+  }
+
+>>>>>>> Stashed changes
   @override
   Widget build(BuildContext context) {
     return Scaffold(
