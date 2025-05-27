@@ -13,13 +13,18 @@ class FindPassword extends StatefulWidget {
 
 class _FindPasswordState extends State<FindPassword> {
   final TextEditingController emailController = TextEditingController();
-  final String serverUrl = 'https://example.com/api/auth/resetpassword';
+  final String serverUrl =
+      'https://foriftiktokapi.seongjinemong.app/api/auth/resetpassword';
   bool isLoading = false;
 
   Future<void> sendTempPassword() async {
     final email = emailController.text.trim();
     if (email.isEmpty) {
       showErrorDialog('입력 오류', '이메일을 입력해주세요.');
+      return;
+    }
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      showErrorDialog('입력 오류', '유효한 이메일 형식이 아닙니다.');
       return;
     }
 
@@ -40,7 +45,9 @@ class _FindPasswordState extends State<FindPassword> {
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        showResultDialog('성공', data['message']);
+        showResultDialog('성공', data['message'] ?? '임시 비밀번호가 전송되었습니다.');
+      } else if (response.statusCode == 404) {
+        showResultDialog('실패', data['message'] ?? '해당 이메일을 찾을 수 없습니다.');
       } else {
         showResultDialog('오류', data['message'] ?? '요청에 실패했습니다.');
       }
