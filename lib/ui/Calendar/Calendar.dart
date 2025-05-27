@@ -1,90 +1,137 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
+import '../../data/services/calendar_api.dart';
+import '../../data/services/calendar_service.dart';
 import '../ScheduleDetails/ScheduleDetails.dart';
 import '../ScheduleAdd/ScheduleAdd.dart';
 
-class Calendar extends StatelessWidget {
+class Calendar extends StatefulWidget {
   const Calendar({super.key});
+
+  @override
+  State<Calendar> createState() => _CalendarState();
+}
+
+class _CalendarState extends State<Calendar> {
+  late final CalendarService _calendarService;
+  List<Meeting> _meetings = [];
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    // 실제 토큰으로 교체 필요
+    final calendarApi = CalendarApi(accessToken: 'your_access_token');
+    _calendarService = CalendarService(calendarApi: calendarApi);
+    _fetchMeetings();
+  }
+
+  Future<void> _fetchMeetings() async {
+    print("fetchMeetings called");
+    try {
+      final events = await _calendarService.fetchCalendars();
+      print(events);
+      // events를 Meeting 리스트로 변환 (API 응답 구조에 맞게 수정 필요)
+      final meetings = <Meeting>[];
+      for (var event in events) {
+        // 예시: API 응답에 따라 key 이름 맞게 수정
+        meetings.add(Meeting(
+          event['title'] ?? '제목 없음',
+          DateTime.parse(event['date'] ?? DateTime.now().toIso8601String()),
+          DateTime.parse(event['date'] ?? DateTime.now().toIso8601String()).add(const Duration(hours: 1)),
+          Colors.blue,
+          false,
+        ));
+      }
+      setState(() {
+        _meetings = meetings;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('캘린더')),
-      body:SfCalendar(
-      view: CalendarView.month,
-      dataSource: MeetingDataSource(_getDataSource()),
-      monthViewSettings: const MonthViewSettings(
-        appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
-        showAgenda: true,
-      ),
-      onTap: (CalendarTapDetails details) {
-        if (details.targetElement == CalendarElement.calendarCell &&
-            details.date != null) {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            builder: (_) => ScheduleDetails(date: details.date!),
-          );
-        }
-      },
-    ),
-
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(child: Text('에러 발생: $_error'))
+              : SfCalendar(
+                  view: CalendarView.month,
+                  dataSource: MeetingDataSource(_meetings),
+                  headerStyle: CalendarHeaderStyle(
+                    textStyle: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                    backgroundColor: Colors.transparent,
+                  ),
+                  showNavigationArrow: true,
+                  monthViewSettings: const MonthViewSettings(
+                    appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
+                    showAgenda: true,
+                  ),
+                  appointmentBuilder: (context, details) {
+                    final Meeting meeting = details.appointments.first;
+                    return Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: meeting.background,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        meeting.eventName,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  },
+                  onTap: (CalendarTapDetails details) {
+                    if (details.targetElement == CalendarElement.calendarCell &&
+                        details.date != null) {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                        ),
+                        builder: (_) => ScheduleDetails(date: details.date!),
+                      );
+                    }
+                  },
+                ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const ScheduleAdd(),
-                  ),
-                );
+            context,
+            MaterialPageRoute(
+              builder: (_) => const ScheduleAdd(),
+            ),
+          );
         },
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  List<Meeting> _getDataSource() {
-    final List<Meeting> meetings = <Meeting>[];
-    final DateTime today = DateTime.now();
-
-    // 반복 일정: 매주 수요일 오전 10시 회의
-    meetings.add(Meeting(
-      '주간 회의',
-      DateTime(today.year, today.month, today.day, 10, 0),
-      DateTime(today.year, today.month, today.day, 11, 0),
-      const Color(0xFF0F8644),
-      false,
-      recurrenceRule: 'FREQ=WEEKLY;BYDAY=WE',
-    ));
-
-    // 일반 일정: 하루짜리 행사
-    meetings.add(Meeting(
-      '기획 회의',
-      today.add(const Duration(days: 2, hours: 9)),
-      today.add(const Duration(days: 2, hours: 10)),
-      Colors.blue,
-      false,
-    ));
-    meetings.add(Meeting(
-      '어쩌구 회의',
-      today.add(const Duration(days: 2, hours: 10)),
-      today.add(const Duration(days: 2, hours: 11)),
-      Colors.blue,
-      false,
-    ));
-
-    meetings.add(Meeting(
-      '디자인 검토',
-      today.add(const Duration(days: 3, hours: 13)),
-      today.add(const Duration(days: 3, hours: 14)),
-      Colors.purple,
-      false,
-    ));
-
-    return meetings;
+  String _formatTime(DateTime dt) {
+    return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 }
 
