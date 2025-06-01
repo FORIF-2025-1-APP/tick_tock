@@ -46,7 +46,7 @@ class _RegisterState extends State<Register> {
       setState(() => isLoading = false);
 
       final data = jsonDecode(response.body);
-      if (response.statusCode == 200 && data['message'] == '사용 가능한 이메일입니다.') {
+      if (response.statusCode == 200) {
         setState(() => isEmailValid = true);
         showDialog(
           context: context,
