@@ -1,80 +1,85 @@
 import 'package:flutter/material.dart';
-import '../core/ui/CustomInput.dart'; 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../core/ui/CustomInput.dart';
 import '../core/ui/CustomButton.dart';
 import 'category.dart';
 import 'WeekNavigator.dart';
 import 'TodoCategory.dart';
 import '../TodoAdd/TodoAdd.dart';
+import 'package:tick_tock/data/services/TodoApi.dart';
+import 'package:tick_tock/data/services/TodoService.dart';
+import 'package:tick_tock/data/model/TodoEvent.dart';
 
 class Todo extends StatefulWidget {
-  const Todo({super.key});
+  final String? initialToken;
+  const Todo({super.key, this.initialToken});
 
   @override
   State<Todo> createState() => _TodoState();
 }
 
 class _TodoState extends State<Todo> {
-  
-  List<Category> categories = [Category(name: "에시")];
- // 카테고리 관리가 마이페이지에 생기면 이건 필요 없음
-//   void _addCategory() {
-//     final controller = TextEditingController();
-//     showDialog(
-//       context: context,
-//       builder: (ctx) => AlertDialog(
-//         title: const Text('카테고리 추가'),
-//         content: CustomInput( 
-//           controller: controller,
-//           hintText: '카테고리 이름 입력',
-//         ),
-//         actions: [
-//           Row(
-//             mainAxisAlignment: MainAxisAlignment.end,
-//             children: [
-//               CustomButton(
-//                 onPressed: () => Navigator.of(ctx).pop(),
-//                 child: const Text('취소'),
-//                 type: ButtonType.white,
-//                 width: 80,
-//                 height: 40,
-//                 padding: EdgeInsets.zero,
-//               ),
-//               const SizedBox(width: 8),
-//               CustomButton(
-//                 onPressed: () {
-//                   final name = controller.text.trim();
-//                   if (name.isNotEmpty) {
-//                     setState(() {
-//                       categories.add(Category(name: name));
-//                     });
-//                   }
-//                   Navigator.of(ctx).pop();
-//                 },
-//                 child: const Text('추가'),
-//                 type: ButtonType.black,
-//                 width: 80,
-//                 height: 40,
-//                 padding: EdgeInsets.zero,
-//               ),
-//             ],
-//           ),
-//         ],
-//       ),
-//     );
-//   }
- // 카테고리 관리 생기면 필요없음
-  void _deleteCategory(int index) {
+  final _storage = const FlutterSecureStorage();
+  late final TodoService _todoService;
+  DateTime _selectedDate = DateTime.now();
+  Future<Map<String, List<TodoEvent>>> _futureTodos = Future.value({});
+  Map<String, List<TodoEvent>> _todos = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _initService();
+  }
+
+  Future<void> _initService() async {
+    final token = await _storage.read(key: 'auth_token');
+    print('token = $token');
+    final api = TodoApi(accessToken: token);
+    _todoService = TodoService(api: api);
+
+    print('tempTodos = $_selectedDate');
+    _loadTodosForDate(_selectedDate);
+  }
+
+  void _loadTodosForDate(DateTime date) async {
+    final dateStr = date.toUtc().toIso8601String().split('T')[0];
+
+    final tempTodos = await _todoService.fetchTodosByDate(dateStr);
+    print('tempTodos = $tempTodos');
+
     setState(() {
-      categories.removeAt(index);
+      _futureTodos = _todoService.fetchTodosByDate(dateStr);
+      _todos = tempTodos;
     });
   }
 
-  void _goToTodoAddPage () {
-    Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => const TodoAdd(),
-              ),);
+  void _onPreviousWeek() {
+    final newDate = _selectedDate.subtract(const Duration(days: 7));
+    _onDateSelected(newDate);
+  }
+
+  void _onNextWeek() {
+    final newDate = _selectedDate.add(const Duration(days: 7));
+    _onDateSelected(newDate);
+  }
+
+  void _onDateSelected(DateTime date) {
+    setState(() {
+      _selectedDate = DateTime(date.year, date.month, date.day);
+      _loadTodosForDate(_selectedDate);
+    });
+  }
+
+  // 투두 추가 페이지로 이동
+  void _goToTodoAddPage() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const TodoAdd()),
+    );
+
+    if (result == true) {
+      _loadTodosForDate(_selectedDate);
+    }
   }
 
   @override
@@ -96,17 +101,45 @@ class _TodoState extends State<Todo> {
       body: Column(
         children: [
           const SizedBox(height: 16),
-          const WeekNavigator(),
+          WeekNavigator(
+            selectedDate: _selectedDate,
+            onDateSelected: _onDateSelected,
+            onPreviousWeek: _onPreviousWeek,
+            onNextWeek: _onNextWeek,
+          ),
           const SizedBox(height: 8),
           Expanded(
-            child: ListView.builder(
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                final cat = categories[index];
-                return TodoCategorySection(
-                  title: cat.name,
-                  items: cat.todos,
-                  onDelete: () => _deleteCategory(index),
+            child: Builder(
+              builder: (context) {
+                // if (!_.hasData || _todos.isEmpty) {
+                if (_todos.isEmpty) {
+                  return const Center(child: Text('할 일이 없습니다.'));
+                }
+                // if (snapshot.connectionState == ConnectionState.waiting) {
+                //   return const Center(child: CircularProgressIndicator());
+                // }
+                // if (snapshot.hasError) {
+                //   return Center(child: Text('Error: \${snapshot.error}'));
+                // }
+                // if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                //   return const Center(child: Text('할 일이 없습니다.'));
+                // }
+                final todos = _todos;
+                // 날짜별 TodoEvent를 category별로 묶어서 섹션 생성
+                final grouped = _todos;
+
+                return ListView(
+                  children: grouped.entries.map((entry) {
+                    final categoryName = entry.key;
+                    final items = entry.value;
+                    return TodoCategorySection(
+                      title: categoryName,
+                      items: items,
+                      onRefresh: () {
+                        _loadTodosForDate(_selectedDate);
+                      },
+                    );
+                  }).toList(),
                 );
               },
             ),
