@@ -1,9 +1,13 @@
 class Category {
+  final String id;
   final String name;
-  final List<String> todos;
 
-  Category({
-    required this.name,
-    this.todos = const [],
-  });
+  Category({required this.id, required this.name});
+
+  factory Category.fromJson(Map<String, dynamic> json) {
+    return Category(
+      id: json['id'],
+      name: json['name'],
+    );
+  }
 }
