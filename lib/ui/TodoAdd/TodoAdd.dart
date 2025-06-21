@@ -29,7 +29,7 @@ class _TodoAddState extends State<TodoAdd> {
   String _selectedRepeat = '안함';
 
   final Set<int> _selectedTagIndices = {};
-  final List<String> _tagLabels = ["Tag1", "Tag2", "Tag3", "Tag4", "Tag5"];
+  final List<String> _tagLabels = ["공부", "운동"];
 
   late final TodoService _todoService;
   
@@ -52,7 +52,7 @@ class _TodoAddState extends State<TodoAdd> {
       _titleController.text = e.title;
       _startController.text = e.startTime.toUtc().toIso8601String().split('T').first.replaceAll('-', '/');
       _endController.text = e.endTime.toUtc().toIso8601String().split('T').first.replaceAll('-', '/');
-      _selectedRepeat = e.repeat;
+      _selectedRepeat = _reverseMapRepeat(e.repeat);
       for (int i = 0; i < _tagLabels.length; i++) {
         if (e.categories.contains(_tagLabels[i])) {
           _selectedTagIndices.add(i);
@@ -84,6 +84,19 @@ class _TodoAddState extends State<TodoAdd> {
     }
   }
 
+
+  String _reverseMapRepeat(String repeat) {
+    switch (repeat) {
+      case 'NONE': return '안함';
+      case 'DAILY': return '매일';
+      case 'WEEKLY': return '매주';
+      case 'MONTHLY': return '매월';
+      case 'YEARLY': return '매년';
+      default: return '안함';
+    }
+  }
+
+
   String _mapRepeat(String repeat) {
   switch (repeat) {
     case '안함': return 'NONE';
@@ -101,17 +114,7 @@ class _TodoAddState extends State<TodoAdd> {
     final startText = _startController.text.replaceAll('/', '-');
     final endText = _endController.text.replaceAll('/', '-');
     
-    
-    // 서버에서 받은 UUID로 변환하는 카테고리 매핑 예시
-    // 실제 앱에서는 서버에서 categoryMap을 받아서 사용해야 함
-    // final Map<String, String> categoryMap = {
-    //   "Tag1": "d1f9f97e-xxxx-yyyy-zzzz-abcabcabcabc",
-    //   "Tag2": "a2b3c4d5-xxxx-yyyy-zzzz-abcabcabcabc",
-    //   "Tag3": "b3c4d5e6-xxxx-yyyy-zzzz-abcabcabcabc",
-    //   "Tag4": "c4d5e6f7-xxxx-yyyy-zzzz-abcabcabcabc",
-    //   "Tag5": "d5e6f7g8-xxxx-yyyy-zzzz-abcabcabcabc",
-    //   };
-
+  
     if (title.isEmpty || startText.isEmpty || endText.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('제목, 시작/종료 날짜는 필수입니다.')),
@@ -128,6 +131,14 @@ class _TodoAddState extends State<TodoAdd> {
     final selectedTags = _selectedTagIndices.map((i) => _tagLabels[i]).toList();
 
     setState(() => _isSaving = true);
+
+    print('🧪 저장 직전:');
+    print('title: $title');
+    print('start: $start');
+    print('end: $end');
+    print('repeat: $repeat');
+    print('selectedTags: $selectedTags');
+
 
     try {
       if (widget.existing == null) {
@@ -147,7 +158,7 @@ class _TodoAddState extends State<TodoAdd> {
           startTime: start,
           endTime: end,
           repeat: repeat,
-          categories: selectedTags,
+          categories: ["3dc9bd9d-593f-4f96-858f-3206dd5736cc"],
         );
       }
       Navigator.of(context).pop(true);
@@ -219,7 +230,7 @@ class _TodoAddState extends State<TodoAdd> {
               CustomSelect(
                 label: '반복',
                 value: _selectedRepeat,
-                items: _repeatOptions,
+                items: _repeatOptions.toSet().toList(),
                 onChanged: (val) {
                   if (val != null) setState(() => _selectedRepeat = val);
                 },
