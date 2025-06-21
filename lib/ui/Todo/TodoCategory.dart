@@ -42,6 +42,15 @@ class _TodoCategorySectionState extends State<TodoCategorySection> {
     final api = TodoApi();
     _todoService = TodoService(api: api);
   }
+  
+  @override
+  void didUpdateWidget(covariant TodoCategorySection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.items != widget.items) {
+      _todos = List.from(widget.items);
+      _checked = _todos.map((e) => e.isDone).toList();
+    }
+  }
 
   /// 새로운 Todo 추가
   void _addTodo() {
@@ -195,25 +204,38 @@ class _TodoCategorySectionState extends State<TodoCategorySection> {
                   ),
                 ],
               ),
-              child: Row(
-                children: [
-                  CustomCheckBox(
-                    value: _todos[i].isDone,
-                    onChanged: (val) => _toggleDone(i, val),
-                    type: CheckBoxType.noLabel,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _todos[i].title,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            decoration: _checked[i]
-                                ? TextDecoration.lineThrough
-                                : TextDecoration.none,
-                          ),
+              child: InkWell(
+                onTap: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => TodoAdd(existing: _todos[i]),
                     ),
-                  ),
-                ],
+                  );
+                  if (result == true) {
+                    widget.onRefresh();
+                  }
+                },
+                child: Row(
+                  children: [
+                    CustomCheckBox(
+                      value: _todos[i].isDone,
+                      onChanged: (val) => _toggleDone(i, val),
+                      type: CheckBoxType.noLabel,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _todos[i].title,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              decoration: _checked[i]
+                                  ? TextDecoration.lineThrough
+                                  : TextDecoration.none,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
