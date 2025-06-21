@@ -44,6 +44,42 @@ class _SplashState extends State<Splash> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Icon(Icons.person, size: 64)));
+    return Scaffold(
+      backgroundColor: Colors.white, // 배경 흰색
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 이미지
+            Image.asset(
+              'assets/images/logo.png', // ← 실제 경로
+              width: 200,
+              height: 200,
+            ),
+            const SizedBox(height: 20),
+
+            // "TICK TOCK" 텍스트
+            const Text(
+              'TICK TOCK',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF678D58), // 녹색 계열 HEX
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // 설명 텍스트
+            const Text(
+              '스마트한 일정 관리 플랫폼',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

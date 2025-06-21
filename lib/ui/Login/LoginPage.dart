@@ -188,8 +188,11 @@ class _LoginPageState extends State<LoginPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.person, size: 64),
-            SizedBox(height: 32),
+            Image.asset(
+              'assets/images/logo.png', // ← 실제 경로
+              width: 150,
+              height: 150,
+            ),
             CustomInput(labelText: 'Email', controller: emailController),
             SizedBox(height: 16),
             CustomInput(

@@ -158,6 +158,90 @@ class _RegisterState extends State<Register> {
     super.dispose();
   }
 
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(leading: BackButton(), title: Text('회원가입')),
+//       resizeToAvoidBottomInset: true, // 키보드 올라올 때 자동 inset 조절
+//       body: SafeArea(
+//         child: SingleChildScrollView(
+//           padding: const EdgeInsets.all(24.0),
+//           child: Column(
+//             crossAxisAlignment: CrossAxisAlignment.stretch,
+//             children: [
+//               CustomInput(
+//                 labelText: 'Email',
+//                 controller: emailController,
+//                 onChanged: (_) {
+//                   if (isEmailValid) {
+//                     setState(() => isEmailValid = false);
+//                   }
+//                 },
+//               ),
+//               SizedBox(height: 10),
+//               CustomButton(
+//                 type: ButtonType.white,
+//                 child: Text('중복 확인'),
+//                 onPressed: checkEmailDuplicate,
+//               ),
+//               SizedBox(height: 10),
+//               CustomInput(
+//                 labelText: 'Username',
+//                 controller: usernameController,
+//               ),
+//               SizedBox(height: 10),
+//               CustomInput(
+//                 labelText: 'Password',
+//                 obscureText: true,
+//                 controller: passwordController,
+//               ),
+//               SizedBox(height: 10),
+//               CustomInput(
+//                 labelText: 'Password Confirm',
+//                 obscureText: true,
+//                 controller: passwordConfirmController,
+//               ),
+//               Row(
+//                 mainAxisAlignment: MainAxisAlignment.center,
+//                 children: [
+//                   CustomCheckBox(
+//                     value: isChecked,
+//                     type: CheckBoxType.label,
+//                     onChanged: (val) => setState(() => isChecked = val!),
+//                     label: 'Terms and Service 1',
+//                   ),
+//                   IconButton(
+//                     icon: Icon(Icons.arrow_forward),
+//                     onPressed: () async {
+//                       final result = await Navigator.push<bool>(
+//                         context,
+//                         MaterialPageRoute(
+//                           builder: (context) => const RegisterAllow(),
+//                         ),
+//                       );
+//                       if (result == true) {
+//                         setState(() => isChecked = true);
+//                       }
+//                     },
+//                   ),
+//                 ],
+//               ),
+//               SizedBox(height: 40), // 버튼 위 여백
+//               CustomButton(
+//                 type: ButtonType.black,
+//                 child: isLoading
+//                     ? CircularProgressIndicator(color: Colors.white)
+//                     : Text('회원가입'),
+//                 onPressed: isLoading ? null : register,
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
