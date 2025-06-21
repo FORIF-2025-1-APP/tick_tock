@@ -22,7 +22,7 @@ class _CalendarState extends State<Calendar> {
   void initState() {
     super.initState();
     // 실제 토큰으로 교체 필요
-    final calendarApi = CalendarApi(accessToken: 'your_access_token');
+    final calendarApi = CalendarApi(accessToken: 'auth_token');
     _calendarService = CalendarService(calendarApi: calendarApi);
     _fetchMeetings();
   }
