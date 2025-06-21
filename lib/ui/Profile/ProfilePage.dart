@@ -3,11 +3,14 @@ import 'package:tick_tock/ui/core/themes/theme.dart';
 import 'package:tick_tock/ui/core/ui/CustomInput.dart';
 import 'package:tick_tock/ui/Setting/SettingPage.dart';
 import 'package:tick_tock/ui/ManageCategory/ManageCategoryPage.dart';
+import 'package:tick_tock/ui/ChangeName/ChangeNamePage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+/* ================= 친구 목록 API ================= */
 Future<List<String>> fetchFriends() async {
-  final url = Uri.parse('https://forifitkokapi.seongjinemong.app/api/friend');
+  final url =
+      Uri.parse('https://forifitkokapi.seongjinemong.app/api/friend');
 
   try {
     final response = await http.get(url);
@@ -24,6 +27,7 @@ Future<List<String>> fetchFriends() async {
   }
 }
 
+/* ================= ProfilePage ================= */
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -32,12 +36,28 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  /* 닉네임 상태값 */
+  String nickname = 'tic_tock';
+
   List<String> friends = [];
 
+  /* ChangeNamePage 다녀와서 결과 받기 */
+  Future<void> _goToChangeName() async {
+    final newName = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => const ChangeNamePage()),
+    );
+
+    if (newName != null && newName.isNotEmpty) {
+      setState(() => nickname = newName);
+    }
+  }
+
+  /* 친구 리스트 로딩 & 팝업 */
   void _loadAndShowFriends() async {
-    final fetchedFriends = await fetchFriends();
+    await fetchFriends(); // 실제 API 호출은 유지
     setState(() {
-      friends = fetchedFriends;
+      friends = ['friend1', 'friend2']; // 데모용 하드코딩
     });
     _openDraggableSheet(context);
   }
@@ -54,6 +74,7 @@ class _ProfilePageState extends State<ProfilePage> {
         titleSpacing: 16,
         title: const Text('Profile'),
         actions: [
+          /* 카테고리 관리 */
           GestureDetector(
             onTap: () => Navigator.push(
               context,
@@ -61,110 +82,131 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             child: Container(
               margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 color: colors.surfaceVariant,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Row(
-                children: [Icon(Icons.edit, size: 16), SizedBox(width: 4), Text('카테고리')],
+                children: [
+                  Icon(Icons.edit, size: 16),
+                  SizedBox(width: 4),
+                  Text('카테고리')
+                ],
               ),
             ),
           ),
+          /* 설정 페이지 */
           IconButton(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SettingPage()),
-            ),
             icon: const Icon(Icons.settings),
-          ),
-        ],
+              onPressed: () async {
+                final newName = await Navigator.push<String>(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SettingPage()),
+                );
+
+                if (newName != null && newName.isNotEmpty) {
+                  setState(() => nickname = newName);   // ★ 즉시 갱신
+                }
+              },
+            ),
+          ],
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      CircleAvatar(
-                        radius: 40,
-                        backgroundColor: colors.primary.withOpacity(0.1),
-                        child: const Icon(Icons.person, size: 40),
-                      ),
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /* 프로필 헤더 */
+            Row(
+              children: [
+                Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundColor: colors.primary.withOpacity(0.1),
+                      child: const Icon(Icons.person, size: 40),
+                    ),
+                    /* 닉네임 수정 아이콘 */
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: GestureDetector(
+                        onTap: _goToChangeName,
                         child: CircleAvatar(
                           radius: 12,
                           backgroundColor: colors.primary,
-                          child: const Icon(Icons.edit, size: 14, color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'hhihihihihihi',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'HYU@hanyang.ac.kr',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              const Divider(),
-              const SizedBox(height: 24),
-              Center(
-                child: Container(
-                  height: 500,
-                  width: 400,
-                  decoration: BoxDecoration(
-                    color: colors.surfaceVariant,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: _loadAndShowFriends,
-                      child: AbsorbPointer(
-                        child: CustomInput(
-                          controller: TextEditingController(),
-                          labelText: '이름',
+                          child: const Icon(Icons.edit,
+                              size: 14, color: Colors.white),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.search),
-                    onPressed: _loadAndShowFriends,
-                  ),
-                ],
+                  ],
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      nickname,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'HYU@hanyang.ac.kr',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 24),
+            /* 중앙 이미지 */
+            Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  'assets/images/realseed.jpg',
+                  height: 450,
+                  width: 400,
+                  fit: BoxFit.cover,
+                ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 24),
+            /* 친구 검색 */
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: _loadAndShowFriends,
+                    child: AbsorbPointer(
+                      child: CustomInput(
+                        controller: TextEditingController(),
+                        labelText: '이름',
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: _loadAndShowFriends,
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 
+  /* 친구 리스트 드래그 시트 */
   void _openDraggableSheet(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     showModalBottomSheet(

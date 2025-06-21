@@ -1,6 +1,6 @@
 // import 'package:flutter/material.dart';
 // import 'package:tick_tock/ui/core/themes/theme.dart';
-// import 'package:tick_tock/ui//ChangeName/ChangeNamePage.dart';
+// import 'package:tick_tock/ui/ChangeName/ChangeNamePage.dart';
 // import 'package:tick_tock/ui/PasswordChange/PasswordChangePage.dart';
 
 // class SettingPage extends StatelessWidget {
@@ -95,7 +95,7 @@
 // }
 import 'package:flutter/material.dart';
 import 'package:tick_tock/ui/core/themes/theme.dart';
-import 'package:tick_tock/ui//ChangeName/ChangeNamePage.dart';
+import 'package:tick_tock/ui/ChangeName/ChangeNamePage.dart';
 import 'package:tick_tock/ui/PasswordChange/PasswordChangePage.dart';
 
 class SettingPage extends StatefulWidget {
@@ -131,13 +131,19 @@ class _SettingPageState extends State<SettingPage> {
             const SizedBox(height: 10),
 
             // 닉네임 변경
-            GestureDetector(
-              onTap: () => Navigator.push(
+          GestureDetector(
+            onTap: () async {
+              final newName = await Navigator.push<String>(
                 context,
                 MaterialPageRoute(builder: (_) => const ChangeNamePage()),
-              ),
-              child: const Text('닉네임 변경', style: TextStyle(fontSize: 14)),
-            ),
+              );
+
+              if (newName != null && newName.isNotEmpty) {
+                Navigator.of(context).pop(newName);   // ★ 키포인트!
+              }
+            },
+            child: const Text('닉네임 변경', style: TextStyle(fontSize: 14)),
+          ),
 
             const SizedBox(height: 30),
 
