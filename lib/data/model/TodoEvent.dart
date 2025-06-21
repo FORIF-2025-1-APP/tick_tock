@@ -30,11 +30,11 @@ class TodoEvent {
   }
 
   factory TodoEvent.fromJson(Map<String, dynamic> json) => TodoEvent(
-        id: json['id'],
-        title: json['title'],
+        id: json['id'] ?? '',
+        title: json['title'] ?? '',
         startTime: DateTime.parse(json['startTime']),
         endTime: DateTime.parse(json['endTime']),
-        repeat: json['repeat'],
+        repeat: json['repeat'] ?? 'NOEN',
         categories:
             (json['categories'] as List).map((e) => e as String).toList(),
         isDone: json['isDone'] ?? false,
