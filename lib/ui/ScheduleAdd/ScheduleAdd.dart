@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../data/services/calendar_api.dart';
-import '../../data/services/calendar_service.dart';
 import '../core/ui/CustomInput.dart';
 import '../core/ui/CustomButton.dart';
 import '../core/ui/CustomChips.dart';
@@ -28,20 +26,14 @@ class _ScheduleAddState extends State<ScheduleAdd> {
   bool _loading = false;
   String? _error;
 
-  late final CalendarService _calendarService;
-
   @override
   void initState() {
     super.initState();
-    final calendarApi = CalendarApi(accessToken: 'your_access_token');
-    _calendarService = CalendarService(calendarApi: calendarApi);
-    // 기존 일정 데이터가 있으면 입력값 세팅
     if (widget.schedule != null) {
       titleController.text = widget.schedule!["title"] ?? "";
       startController.text = widget.schedule!["startTime"] ?? "";
       endController.text = widget.schedule!["endTime"] ?? "";
       selectedRepeat = widget.schedule!["repeat"] ?? '안함';
-      // 카테고리 태그 세팅 (예시)
       if (widget.schedule!["categories"] != null) {
         for (var cat in widget.schedule!["categories"]) {
           final idx = _tagLabels.indexOf(cat);
@@ -52,34 +44,31 @@ class _ScheduleAddState extends State<ScheduleAdd> {
   }
 
   Future<void> _submitSchedule() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
     try {
-      final selectedTags = _selectedTagIndices.map((i) => _tagLabels[i]).toList();
-      if (widget.schedule != null && widget.schedule!["id"] != null) {
-        // 수정
-        await _calendarService.updateSchedule(
-          id: widget.schedule!["id"],
-          title: titleController.text,
-          startTime: startController.text,
-          endTime: endController.text,
-          repeat: selectedRepeat,
-          categories: selectedTags,
-        );
-      } else {
-        // 추가
-        await _calendarService.addSchedule(
-          title: titleController.text,
-          startTime: startController.text,
-          endTime: endController.text,
-          repeat: selectedRepeat,
-          categories: selectedTags,
-        );
-      }
-      Navigator.pop(context, true);
+      final scheduleData = {
+        "id": widget.schedule?["id"] ??
+            DateTime.now().millisecondsSinceEpoch, // 고유 id
+        "title": titleController.text,
+        "startTime": startController.text,
+        "endTime": endController.text,
+        "repeat": selectedRepeat,
+        "categories": _selectedTagIndices.map((i) => _tagLabels[i]).toList(),
+      };
+
+      Navigator.pop(context, scheduleData); // 일정 정보 전달
     } catch (e) {
-      setState(() { _error = e.toString(); });
+      setState(() {
+        _error = e.toString();
+      });
     } finally {
-      setState(() { _loading = false; });
+      setState(() {
+        _loading = false;
+      });
     }
   }
 

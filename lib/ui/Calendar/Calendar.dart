@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-import '../../data/services/calendar_api.dart';
-import '../../data/services/calendar_service.dart';
-import '../ScheduleDetails/ScheduleDetails.dart';
-import '../ScheduleAdd/ScheduleAdd.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../ScheduleAdd/ScheduleAdd2.dart';
+import "ScheduleDetailsPage.dart";
 
 class Calendar extends StatefulWidget {
   const Calendar({super.key});
@@ -14,133 +11,95 @@ class Calendar extends StatefulWidget {
 }
 
 class _CalendarState extends State<Calendar> {
-  late final CalendarService _calendarService;
   List<Meeting> _meetings = [];
-  bool _loading = true;
-  String? _error;
-  final storage = const FlutterSecureStorage();
-
-  @override
-  void initState() {
-    super.initState();
-    _initCalendar();
-  }
-
-  Future<void> _initCalendar() async {
-    final token = await storage.read(key: 'auth_token');
-    final calendarApi = CalendarApi(accessToken: token);
-    _calendarService = CalendarService(calendarApi: calendarApi);
-    await _fetchMeetings();
-  }
-
-  Future<void> _fetchMeetings() async {
-    print("fetchMeetings called");
-    try {
-      final events = await _calendarService.fetchCalendars();
-      print(events);
-      // events를 Meeting 리스트로 변환 (API 응답 구조에 맞게 수정 필요)
-      final meetings = <Meeting>[];
-      for (var event in events) {
-        // 예시: API 응답에 따라 key 이름 맞게 수정
-        meetings.add(Meeting(
-          event['title'] ?? '제목 없음',
-          DateTime.parse(event['date'] ?? DateTime.now().toIso8601String()),
-          DateTime.parse(event['date'] ?? DateTime.now().toIso8601String())
-              .add(const Duration(hours: 1)),
-          Colors.blue,
-          false,
-        ));
-      }
-      setState(() {
-        _meetings = meetings;
-        _loading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _loading = false;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('캘린더')),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(child: Text('에러 발생: $_error'))
-              : SfCalendar(
-                  view: CalendarView.month,
-                  dataSource: MeetingDataSource(_meetings),
-                  headerStyle: CalendarHeaderStyle(
-                    textStyle: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                    backgroundColor: Colors.transparent,
-                  ),
-                  showNavigationArrow: true,
-                  monthViewSettings: const MonthViewSettings(
-                    appointmentDisplayMode:
-                        MonthAppointmentDisplayMode.appointment,
-                    showAgenda: true,
-                  ),
-                  appointmentBuilder: (context, details) {
-                    final Meeting meeting = details.appointments.first;
-                    return Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: meeting.background,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        meeting.eventName,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        textAlign: TextAlign.center,
-                      ),
-                    );
-                  },
-                  onTap: (CalendarTapDetails details) {
-                    if (details.targetElement == CalendarElement.calendarCell &&
-                        details.date != null) {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.vertical(top: Radius.circular(16)),
-                        ),
-                        builder: (_) => ScheduleDetails(date: details.date!),
-                      );
-                    }
-                  },
-                ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
+      body: SfCalendar(
+        view: CalendarView.month,
+        dataSource: MeetingDataSource(_meetings),
+        headerStyle: const CalendarHeaderStyle(
+          textStyle: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+          backgroundColor: Colors.transparent,
+        ),
+        showNavigationArrow: true,
+        monthViewSettings: const MonthViewSettings(
+          appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
+          showAgenda: true,
+        ),
+        appointmentBuilder: (context, details) {
+          final Meeting meeting = details.appointments.first;
+          return Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: meeting.background,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              meeting.eventName,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              textAlign: TextAlign.center,
+            ),
+          );
+        },
+
+        // ✅ 날짜나 일정 아무 곳이나 누르면 상세 페이지로 이동하도록 onTap 추가한 부분
+        onTap: (CalendarTapDetails details) {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => const ScheduleAdd(),
+              builder: (_) => const ScheduleDetailsPage(),
             ),
           );
+        },
+        // ✅ 여기까지가 추가된 onTap
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const TodoAdd()),
+          );
+
+          // 일정 추가: 6월 21일 "포리프 해커톤"
+          final DateTime startTime = DateTime(2025, 6, 21, 10, 0);
+          final DateTime endTime = DateTime(2025, 6, 21, 18, 0);
+
+          final alreadyExists = _meetings.any((m) =>
+              m.eventName == "포리프 해커톤" &&
+              m.from == startTime &&
+              m.to == endTime);
+
+          if (!alreadyExists) {
+            setState(() {
+              _meetings.add(
+                Meeting(
+                  "포리프 해커톤",
+                  startTime,
+                  endTime,
+                  const Color.fromARGB(255, 77, 133, 13),
+                  false,
+                ),
+              );
+            });
+          }
         },
         child: const Icon(Icons.add),
       ),
     );
-  }
-
-  String _formatTime(DateTime dt) {
-    return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 }
 
