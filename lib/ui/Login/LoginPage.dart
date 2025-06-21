@@ -52,9 +52,14 @@ class _LoginPageState extends State<LoginPage> {
 
       final data = jsonDecode(response.body);
 
+      if (isChecked1) {
+        await storage.write(key: 'autoLogin', value: 'true');
+      }
+
       if (response.statusCode == 200 && data['token'] != null) {
         final token = json.decode(response.body)['token'];
         await storage.write(key: 'auth_token', value: token);
+
         // AuthSession.token = data['token'];
         // AuthSession.userId = data['user']['id'];
         // AuthSession.email = data['user']['email'];
@@ -100,6 +105,8 @@ class _LoginPageState extends State<LoginPage> {
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
+      print('😃😄😁😆😅🤣😂 ${googleAuth.accessToken}');
+
       if (googleAuth.accessToken == null) {
         setState(() => isLoading2 = false);
         showErrorDialog('로그인 실패', '구글 인증 토큰을 가져오지 못했습니다.');
@@ -115,6 +122,10 @@ class _LoginPageState extends State<LoginPage> {
       setState(() => isLoading2 = false);
 
       final data = jsonDecode(response.body);
+
+      if (isChecked1) {
+        await storage.write(key: 'autoLogin', value: 'true');
+      }
 
       if (response.statusCode == 200 && data['token'] != null) {
         final token = json.decode(response.body)['token'];
@@ -149,17 +160,16 @@ class _LoginPageState extends State<LoginPage> {
   void showErrorDialog(String title, String message) {
     showDialog(
       context: context,
-      builder:
-          (_) => AlertDialog(
-            title: Text(title),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('확인'),
-              ),
-            ],
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('확인'),
           ),
+        ],
+      ),
     );
   }
 
@@ -190,19 +200,17 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(height: 16),
             CustomButton(
               type: ButtonType.black,
-              child:
-                  isLoading1
-                      ? CircularProgressIndicator(color: Colors.white)
-                      : Text('로그인'),
+              child: isLoading1
+                  ? CircularProgressIndicator(color: Colors.white)
+                  : Text('로그인'),
               onPressed: login,
             ),
             SizedBox(height: 16),
             CustomButton(
               type: ButtonType.white,
-              child:
-                  isLoading2
-                      ? CircularProgressIndicator(color: Colors.white)
-                      : Text('Login with Google'),
+              child: isLoading2
+                  ? CircularProgressIndicator(color: Colors.white)
+                  : Text('Login with Google'),
               onPressed: signInWithGoogle,
             ),
             Row(

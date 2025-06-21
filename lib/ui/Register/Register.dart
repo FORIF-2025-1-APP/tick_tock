@@ -50,17 +50,16 @@ class _RegisterState extends State<Register> {
         setState(() => isEmailValid = true);
         showDialog(
           context: context,
-          builder:
-              (context) => AlertDialog(
-                title: Text('확인 완료'),
-                content: Text('사용 가능한 이메일입니다.'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text('확인'),
-                  ),
-                ],
+          builder: (context) => AlertDialog(
+            title: Text('확인 완료'),
+            content: Text('사용 가능한 이메일입니다.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('확인'),
               ),
+            ],
+          ),
         );
       } else {
         setState(() => isEmailValid = false);
@@ -111,20 +110,19 @@ class _RegisterState extends State<Register> {
           data['message'] == 'User created successfully') {
         showDialog(
           context: context,
-          builder:
-              (context) => AlertDialog(
-                title: Text('회원가입 성공'),
-                content: Text('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      Navigator.pop(context);
-                    },
-                    child: Text('확인'),
-                  ),
-                ],
+          builder: (context) => AlertDialog(
+            title: Text('회원가입 성공'),
+            content: Text('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                },
+                child: Text('확인'),
               ),
+            ],
+          ),
         );
       } else {
         showErrorDialog('회원가입 실패', data['message'] ?? '회원가입에 실패했습니다.');
@@ -138,17 +136,16 @@ class _RegisterState extends State<Register> {
   void showErrorDialog(String title, String message) {
     showDialog(
       context: context,
-      builder:
-          (BuildContext context) => AlertDialog(
-            title: Text(title),
-            content: Text(message),
-            actions: [
-              TextButton(
-                child: Text('확인'),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
+      builder: (BuildContext context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            child: Text('확인'),
+            onPressed: () => Navigator.of(context).pop(),
           ),
+        ],
+      ),
     );
   }
 
@@ -179,30 +176,29 @@ class _RegisterState extends State<Register> {
                   }
                 },
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 10),
               CustomButton(
                 type: ButtonType.white,
                 child: Text('중복 확인'),
                 onPressed: checkEmailDuplicate,
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 10),
               CustomInput(
                 labelText: 'Username',
                 controller: usernameController,
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 10),
               CustomInput(
                 labelText: 'Password',
                 obscureText: true,
                 controller: passwordController,
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 10),
               CustomInput(
                 labelText: 'Password Confirm',
                 obscureText: true,
                 controller: passwordConfirmController,
               ),
-              SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -231,10 +227,9 @@ class _RegisterState extends State<Register> {
               Spacer(),
               CustomButton(
                 type: ButtonType.black,
-                child:
-                    isLoading
-                        ? CircularProgressIndicator(color: Colors.white)
-                        : Text('회원가입'),
+                child: isLoading
+                    ? CircularProgressIndicator(color: Colors.white)
+                    : Text('회원가입'),
                 onPressed: isLoading ? null : register,
               ),
             ],

@@ -45,9 +45,9 @@ class _FindPasswordState extends State<FindPassword> {
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        showResultDialog('성공', data['message'] ?? '임시 비밀번호가 전송되었습니다.');
+        showResultDialog('성공', '임시 비밀번호가 전송되었습니다.');
       } else if (response.statusCode == 404) {
-        showResultDialog('실패', data['message'] ?? '해당 이메일을 찾을 수 없습니다.');
+        showResultDialog('실패', '해당 이메일을 찾을 수 없습니다.');
       } else {
         showResultDialog('오류', data['message'] ?? '요청에 실패했습니다.');
       }
@@ -62,17 +62,16 @@ class _FindPasswordState extends State<FindPassword> {
   void showResultDialog(String title, String message) {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(title),
-            content: Text(message),
-            actions: [
-              TextButton(
-                child: Text('확인'),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            child: Text('확인'),
+            onPressed: () => Navigator.pop(context),
           ),
+        ],
+      ),
     );
   }
 
@@ -94,10 +93,9 @@ class _FindPasswordState extends State<FindPassword> {
               Spacer(),
               CustomButton(
                 type: ButtonType.black,
-                child:
-                    isLoading
-                        ? CircularProgressIndicator()
-                        : Text('임시 비밀번호 전송'),
+                child: isLoading
+                    ? CircularProgressIndicator()
+                    : Text('임시 비밀번호 전송'),
                 onPressed: isLoading ? null : sendTempPassword,
               ),
             ],
