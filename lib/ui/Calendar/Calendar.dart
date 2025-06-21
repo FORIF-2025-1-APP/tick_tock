@@ -4,6 +4,7 @@ import '../../data/services/calendar_api.dart';
 import '../../data/services/calendar_service.dart';
 import '../ScheduleDetails/ScheduleDetails.dart';
 import '../ScheduleAdd/ScheduleAdd.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class Calendar extends StatefulWidget {
   const Calendar({super.key});
@@ -17,14 +18,19 @@ class _CalendarState extends State<Calendar> {
   List<Meeting> _meetings = [];
   bool _loading = true;
   String? _error;
+  final storage = const FlutterSecureStorage();
 
   @override
   void initState() {
     super.initState();
-    // 실제 토큰으로 교체 필요
-    final calendarApi = CalendarApi(accessToken: 'your_access_token');
+    _initCalendar();
+  }
+
+  Future<void> _initCalendar() async {
+    final token = await storage.read(key: 'auth_token');
+    final calendarApi = CalendarApi(accessToken: token);
     _calendarService = CalendarService(calendarApi: calendarApi);
-    _fetchMeetings();
+    await _fetchMeetings();
   }
 
   Future<void> _fetchMeetings() async {
@@ -39,7 +45,8 @@ class _CalendarState extends State<Calendar> {
         meetings.add(Meeting(
           event['title'] ?? '제목 없음',
           DateTime.parse(event['date'] ?? DateTime.now().toIso8601String()),
-          DateTime.parse(event['date'] ?? DateTime.now().toIso8601String()).add(const Duration(hours: 1)),
+          DateTime.parse(event['date'] ?? DateTime.now().toIso8601String())
+              .add(const Duration(hours: 1)),
           Colors.blue,
           false,
         ));
@@ -77,7 +84,8 @@ class _CalendarState extends State<Calendar> {
                   ),
                   showNavigationArrow: true,
                   monthViewSettings: const MonthViewSettings(
-                    appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
+                    appointmentDisplayMode:
+                        MonthAppointmentDisplayMode.appointment,
                     showAgenda: true,
                   ),
                   appointmentBuilder: (context, details) {
@@ -109,7 +117,8 @@ class _CalendarState extends State<Calendar> {
                         context: context,
                         isScrollControlled: true,
                         shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(16)),
                         ),
                         builder: (_) => ScheduleDetails(date: details.date!),
                       );
